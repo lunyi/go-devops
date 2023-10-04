@@ -12,6 +12,8 @@ import (
 	"tgs-devops/utils"
 	"time"
 
+	"github.com/go-chi/jwtauth"
+
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
@@ -53,10 +55,10 @@ func main() {
 	http.ListenAndServe(utils.GetPort(), router)
 }
 
+var tokenAuth = jwtauth.New("HS256", []byte("your-secret-key"), nil)
+
 func registerAPI(router *chi.Mux) {
 	router.Route("/", func(r chi.Router) {
-		// use the Bearer Authentication middleware
-
 		router.Use(middleware.Logger)
 		router.Use(middleware.Recoverer)
 
@@ -80,6 +82,9 @@ func registerAPI(router *chi.Mux) {
 				nil)
 
 			r.Use(oauth.Authorize(secretKey, nil))
+
+			r.Use(jwtauth.Verifier(tokenAuth)) // Verify JWT token
+			r.Use(jwtauth.Authenticator)       // Authenticator middleware
 
 			r.Post("/token", s.UserCredentials)
 			r.Post("/auth", s.ClientCredentials)
