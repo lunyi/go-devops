@@ -1,1 +1,1 @@
-# tgs-devops
+# go-devops
